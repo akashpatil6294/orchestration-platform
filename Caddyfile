@@ -1,0 +1,63 @@
+# Caddy reverse proxy for production (Issue 3).
+#
+# Serves the built frontend (frontend/dist) as static files and proxies
+# /api/* to the FastAPI backend. Gets automatic HTTPS from Let's Encrypt.
+#
+# Replace <your-domain> with your actual domain, then:
+#     caddy run --config Caddyfile
+#
+# Single-hostname mode (recommended): one domain, /api/* proxied.
+# Frontend build must use VITE_API_BASE_URL= (empty) for same-origin calls.
+
+app.<your-domain> {
+    root * frontend/dist
+    file_server
+
+    # SPA fallback: serve index.html for client-side routes.
+    try_files {path} /index.html
+
+    # API reverse proxy.
+    handle /api/* {
+        reverse_proxy 127.0.0.1:8001
+    }
+
+    # Security headers.
+    header {
+        Strict-Transport-Security "max-age=31536000; includeSubDomains"
+        X-Content-Type-Options "nosniff"
+        X-Frame-Options "DENY"
+        Referrer-Policy "strict-origin-when-cross-origin"
+    }
+
+    log {
+        output stdout
+        format json
+    }
+}
+
+# Alternative: split hostnames (uncomment to use instead of the above).
+# app.<your-domain> {
+#     root * frontend/dist
+#     file_server
+#     try_files {path} /index.html
+# }
+#
+# api.<your-domain> {
+#     reverse_proxy 127.0.0.1:8001
+# }
+
+# Zero-downtime option: run two API processes (ports 8001 and 8002) and let
+# Caddy load-balance between them. scripts/rolling_restart.py restarts one at
+# a time so the API never goes fully down during a deploy.
+# app.<your-domain> {
+#     root * frontend/dist
+#     file_server
+#     try_files {path} /index.html
+#     handle /api/* {
+#         reverse_proxy 127.0.0.1:8001 127.0.0.1:8002 {
+#             lb_policy round_robin
+#             health_uri /health
+#             health_interval 10s
+#         }
+#     }
+# }

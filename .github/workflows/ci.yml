@@ -1,0 +1,60 @@
+name: CI
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+
+jobs:
+  backend:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+      - name: Install dependencies
+        run: |
+          python -m pip install --upgrade pip
+          pip install -r requirements.txt
+      - name: Run backend tests
+        run: python -m pytest -q tests/
+      - name: Check Alembic single head
+        run: python -m alembic heads | tee /tmp/heads.txt | wc -l | grep -q '^1$'
+      - name: Production safety gate (doctor --strict)
+        run: |
+          cat > /tmp/fake-prod.env <<'EOF'
+          ENVIRONMENT=production
+          SECRET_KEY=ci-fake-secret-key-that-is-long-enough-12345
+          WORKER_SECRET_PEPPER=ci-fake-pepper-16chars
+          SECRETS_ENCRYPTION_KEY=ci-fake-encryption-key-32chars-long!!
+          DATABASE_URL=postgresql+psycopg2://ci:ci@localhost:5432/ci
+          CORS_ORIGINS=https://app.example.com
+          GROQ_API_KEY=ci-fake-groq-key
+          EMBEDDED_WORKER_ENABLED=false
+          EOF
+          set -a; source /tmp/fake-prod.env; set +a
+          python -m app.cli doctor --strict
+
+  frontend:
+    runs-on: ubuntu-latest
+    defaults:
+      run:
+        working-directory: frontend
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: "20"
+          cache: npm
+          cache-dependency-path: frontend/package-lock.json
+      - name: Install dependencies
+        run: npm ci
+      - name: Typecheck
+        run: npx tsc -b
+      - name: Lint
+        run: npm run lint
+      - name: Test
+        run: npm test
+      - name: Build
+        run: npm run build

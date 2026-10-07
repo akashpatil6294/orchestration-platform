@@ -1,0 +1,18 @@
+.venv/
+__pycache__/
+*.py[cod]
+*.db
+artifacts/
+.env
+.pytest_cache/
+
+# Secrets: never commit a filled-in environment file.
+.env.local
+.env.*.local
+
+# Frontend
+frontend/node_modules/
+frontend/dist/
+frontend/.env.local
+frontend/.env
+frontend/.vite/

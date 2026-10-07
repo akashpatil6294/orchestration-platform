@@ -1,0 +1,67 @@
+groups:
+  - name: orchestrator
+    interval: 30s
+    rules:
+      - alert: OrchestratorNoActiveWorkers
+        expr: orchestrator_workers_active == 0
+        for: 5m
+        labels:
+          severity: critical
+        annotations:
+          summary: "No active workers — runs are stuck in queued"
+
+      - alert: OrchestratorQueueGrowing
+        expr: sum(orchestrator_queue_depth) > 100
+        for: 10m
+        labels:
+          severity: warning
+        annotations:
+          summary: "Queue depth {{ $value }} steps waiting for a worker"
+
+      - alert: OrchestratorDLQGrowing
+        expr: orchestrator_dlq_size > 20
+        for: 15m
+        labels:
+          severity: warning
+        annotations:
+          summary: "{{ $value }} failed steps awaiting redrive"
+
+      - alert: OrchestratorRunFailureSpike
+        expr: sum(rate(orchestrator_runs_settled_total{status="failed"}[5m])) > 0.5
+        for: 5m
+        labels:
+          severity: warning
+        annotations:
+          summary: "Run failures above 0.5/sec over 5m"
+
+      - alert: OrchestratorOutboxBacklog
+        expr: orchestrator_outbox_backlog > 500
+        for: 10m
+        labels:
+          severity: warning
+        annotations:
+          summary: "Outbox backlog {{ $value }} unpublished messages"
+
+      - alert: OrchestratorSchedulesDue
+        expr: orchestrator_schedules_due > 10
+        for: 15m
+        labels:
+          severity: warning
+        annotations:
+          summary: "{{ $value }} schedules past their next run time"
+
+      - alert: OrchestratorLeaseExpirations
+        expr: sum(rate(orchestrator_lease_expirations_total[10m])) > 0.2
+        for: 10m
+        labels:
+          severity: warning
+        annotations:
+          summary: "Lease expirations above 0.2/sec — workers may be unhealthy"
+
+      - alert: OrchestratorNotificationsFailing
+        expr: sum(rate(orchestrator_notification_deliveries_total{status="failed"}[10m])) > 0.1
+        for: 10m
+        labels:
+          severity: warning
+        annotations:
+          summary: "Notification deliveries failing"

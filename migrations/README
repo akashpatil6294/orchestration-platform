@@ -1,0 +1,36 @@
+# Schema migrations
+
+Alembic owns the database schema. SQLAlchemy models in `app/models/` are the
+source of truth for the shape, and every change is captured as a reviewed
+revision here.
+
+## Commands
+
+    # Apply everything (this is what `python -m app.cli migrate` runs)
+    alembic upgrade head
+
+    # After editing app/models/*.py, generate a revision and read it before committing
+    alembic revision --autogenerate -m "add schedule catchup column"
+
+    # Inspect / roll back
+    alembic current
+    alembic history --verbose
+    alembic downgrade -1
+
+    # Emit SQL without touching the database (useful for a DBA review)
+    alembic upgrade head --sql
+
+The target database comes from `DATABASE_URL` (see `.env.example`), so the same
+commands work against SQLite locally and PostgreSQL in a deployment.
+
+## Notes
+
+* SQLite cannot alter most column definitions, so `env.py` enables Alembic's
+  `render_as_batch` mode and rewrites tables instead.
+* The initial revision creates the full schema, including the indexes that make
+  task claiming and run history fast (`ix_step_claimable`,
+  `ix_run_workflow_idempotency`, `ix_schedule_due`).
+* `ix_run_workflow_idempotency` is unique: it is what makes schedule duplicate
+  protection and run idempotency keys authoritative under concurrency.
+* Timestamps are stored as timezone-naive UTC in every dialect, so SQLite and
+  PostgreSQL behave identically. API responses re-attach UTC.
