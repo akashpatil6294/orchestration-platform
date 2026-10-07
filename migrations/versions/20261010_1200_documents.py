@@ -1,7 +1,7 @@
 """Stage C documents migration.
 
 Revision ID: 20261010_1200_documents
-Revises: 20261010_1100_phase6_notifications
+Revises: 20261010_1100_phase6
 """
 
 from __future__ import annotations
@@ -13,7 +13,7 @@ import sqlalchemy as sa
 
 
 revision: str = "20261010_1200_documents"
-down_revision: Union[str, None] = "20261010_1100_phase6_notifications"
+down_revision: Union[str, None] = "20261010_1100_phase6"
 branch_labels: Union[str, Sequence[str], None] = None
 depends_on: Union[str, Sequence[str], None] = None
 

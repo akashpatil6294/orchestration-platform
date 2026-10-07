@@ -1,6 +1,6 @@
 """Phase 6 notifications migration.
 
-Revision ID: 20261010_1100_phase6_notifications
+Revision ID: 20261010_1100_phase6
 Revises: 20261010_1000_phase5_audit
 """
 
@@ -12,7 +12,7 @@ from alembic import op
 import sqlalchemy as sa
 
 
-revision: str = "20261010_1100_phase6_notifications"
+revision: str = "20261010_1100_phase6"
 down_revision: Union[str, None] = "20261010_1000_phase5_audit"
 branch_labels: Union[str, Sequence[str], None] = None
 depends_on: Union[str, Sequence[str], None] = None
