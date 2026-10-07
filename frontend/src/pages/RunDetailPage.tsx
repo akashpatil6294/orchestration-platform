@@ -281,7 +281,6 @@ export function RunDetailPage() {
   const [actionError, setActionError] = useState<string | null>(null)
   const [acting, setActing] = useState<'cancel' | 'retry' | 'pause' | 'resume' | string | null>(null)
   const [showReplay, setShowReplay] = useState(false)
-  const [replayInput, setReplayInput] = useState('')
   const [showEvents, setShowEvents] = useState(false)
 
   const run = useResource<RunDetail>((signal) => api.get<RunDetail>(`/api/v1/runs/${runId}`, signal), [runId])
