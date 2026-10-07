@@ -1,5 +1,4 @@
 """Run routes: history, detail, live events, attempts, cancellation and retry."""
-from __future__ import annotations
 
 import json
 import time
@@ -7,6 +6,7 @@ from datetime import datetime, timedelta, timezone
 from typing import Annotated
 
 from fastapi import APIRouter, Depends, Query, Request, Response, status
+from fastapi.responses import StreamingResponse
 from sqlalchemy import func, select
 
 from app.api.deps import CurrentUser, DbSession
@@ -141,7 +141,6 @@ def stream_run_events(
 ) -> StreamingResponse:
     """Server-sent events for a run: replays events after ``after_seq``, then
     streams new ones until the run settles or 5 minutes pass."""
-    from fastapi.responses import StreamingResponse
 
     run = run_service.get_run(db, run_id, user.id)
     run_id_value = run.id

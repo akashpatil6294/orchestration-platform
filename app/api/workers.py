@@ -9,6 +9,7 @@ from __future__ import annotations
 import time
 from datetime import datetime, timezone
 
+from fastapi.responses import Response as FastAPIResponse
 from fastapi import APIRouter, Query, status
 from sqlalchemy import select
 
@@ -143,14 +144,13 @@ def _dispatch_stream_cursor():
 
 
 @router.get("/documents/{document_id}")
-def worker_document(document_id: str, worker: CurrentWorker, db: DbSession) -> Response:
+def worker_document(document_id: str, worker: CurrentWorker, db: DbSession) -> FastAPIResponse:
     """Fetch a document's bytes for a task this worker currently holds.
 
     The worker is authorized iff at least one ``running`` step assigned to it
     (valid lease) references the document ID in its step input or its run's
     workflow input. Documents belonging to other owners' tasks are unreachable.
     """
-    from fastapi.responses import Response as FastAPIResponse
 
     from app.models.document import Document
     from app.models.run import StepRun, WorkflowRun
