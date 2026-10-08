@@ -27,7 +27,7 @@ def upgrade() -> None:
     columns = {column["name"] for column in sa.inspect(bind).get_columns("workflow_runs")}
     if "is_test" not in columns:
         op.add_column("workflow_runs", sa.Column("is_test", sa.Boolean(), nullable=False, server_default="0"))
-    op.execute("UPDATE workflow_runs SET is_test = 0 WHERE is_test IS NULL")
+    op.execute(sa.text("UPDATE workflow_runs SET is_test = FALSE WHERE is_test IS NULL"))
 
 
 def downgrade() -> None:
