@@ -23,6 +23,24 @@ export class ErrorBoundary extends Component<Props, State> {
     // No token or credential is present in a stack trace; the message is enough
     // to correlate with the API request id shown to the user.
     console.error('Unhandled UI error', error, info.componentStack)
+
+    // React throws this when a DOM node it tracked was reparented by an
+    // external actor (browser translate, extensions, or a bug in a portal
+    // component). Recovery is deterministic: one clean reload.
+    const msg = String(error?.message || '')
+    const isDomMismatch = msg.includes('removeChild') || msg.includes('insertBefore')
+    if (isDomMismatch && typeof window !== 'undefined') {
+      let alreadyTried = false
+      try {
+        alreadyTried = sessionStorage.getItem('__dom_reload') === '1'
+      } catch {
+        /* sessionStorage can be blocked; treat as not-tried */
+      }
+      if (!alreadyTried) {
+        try { sessionStorage.setItem('__dom_reload', '1') } catch {}
+        window.location.reload()
+      }
+    }
   }
 
   render() {
