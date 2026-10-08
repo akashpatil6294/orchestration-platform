@@ -165,7 +165,11 @@ export function AppShell() {
           <div className="app-main">
             <header className="app-header">
               <button type="button" className="button button-ghost navigation-toggle" aria-label={navigationOpen ? 'Close navigation' : 'Open navigation'} aria-controls="main-navigation" aria-expanded={navigationOpen} onClick={() => setNavigationOpen(open => !open)}>☰</button>
-              {pathname === '/dashboard' ? <div id="dashboard-header"/> : <div className="app-header-title">{pageTitle}</div>}
+              <div
+          id="dashboard-header"
+          style={{ display: pathname === '/dashboard' ? undefined : 'none' }}
+        />
+        {pathname !== '/dashboard' && <div className="app-header-title">{pageTitle}</div>}
               <div className="page-actions">
                 <TeamSwitcher />
                 <ThemeToggle />
