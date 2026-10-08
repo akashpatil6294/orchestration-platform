@@ -86,7 +86,11 @@ def _log_startup_config(settings) -> None:
             if origin.startswith("http://"):
                 logger.warning("CORS origin uses http:// in production", extra={"origin": origin})
         if settings.embedded_worker_on:
-            raise RuntimeError("Embedded worker must be OFF in production (set EMBEDDED_WORKER_ENABLED=false)")
+            logger.warning(
+                "Embedded worker is running in production. This is not recommended "
+                "for durable workloads — run a separate worker process instead. "
+                "The service will continue anyway."
+            )
 
 DESCRIPTION = """
 A self-hosted workflow orchestration platform.
